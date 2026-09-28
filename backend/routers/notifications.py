@@ -1,11 +1,13 @@
 import os
 from datetime import datetime, timedelta, timezone
+from typing import Literal
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query, Request, Response
 
 from lib.auth import get_current_user, require_role
 from lib.db import db
 from lib.email_service import email_mode, record_mock_whatsapp, send_email_notification
+from lib.email_analytics_export import build_analytics_csv, build_analytics_pdf
 from models.notification import (
     Notification,
     EmailAnalytics,
@@ -89,6 +91,28 @@ async def email_analytics(
         open_rate=round((totals["opened"] / delivered_count * 100) if delivered_count else 0, 1),
         failure_rate=round((totals["failed"] / sent * 100) if sent else 0, 1),
         trend=[EmailAnalyticsPoint(date=date, **values) for date, values in sorted(daily.items())],
+    )
+
+
+@router.get("/analytics/email/export")
+async def export_email_analytics(
+    request: Request,
+    period: str = Query(default="30d", alias="range", pattern="^(7d|30d|all)$"),
+    format: Literal["csv", "pdf"] = Query(default="csv"),
+):
+    analytics = await email_analytics(request=request, period=period)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
+    filename = f"analitik-email-{period}-{stamp}.{format}"
+    if format == "csv":
+        content = build_analytics_csv(analytics)
+        media_type = "text/csv; charset=utf-8"
+    else:
+        content = await build_analytics_pdf(analytics)
+        media_type = "application/pdf"
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 

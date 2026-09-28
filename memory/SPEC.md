@@ -27,3 +27,4 @@ Portal publik untuk pengumuman dan partisipasi lelang barang rampasan/sitaan neg
 6. Halaman rekap publik menampilkan lelang selesai, nama pemenang tersamarkan, dan nilai akhir.
 7. Email dikirim melalui Brevo ketika kredensial aktif. Webhook bearer-authenticated mencatat event `delivered`, `opened`, `softBounce`, `hardBounce`, `blocked`, `invalid`, dan `error` secara idempoten ke timeline peserta yang diperbarui setiap 15 detik. WhatsApp tetap **DEMO MOCK**.
 8. Panel admin menyediakan analitik email untuk 7 hari, 30 hari, dan sepanjang waktu: total diproses, rasio terkirim, rasio dibuka, rasio gagal, funnel status, dan tren harian.
+9. Admin dapat mengunduh analitik sesuai rentang aktif sebagai CSV berisi KPI dan tren, atau PDF resmi berlogo BPA/Kejari dengan ringkasan, funnel, grafik, tabel harian, dan area tanda tangan.
