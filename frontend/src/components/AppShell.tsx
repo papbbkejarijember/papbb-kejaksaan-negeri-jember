@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Gavel, LayoutDashboard, LogIn, LogOut, Moon, ShieldCheck, Sun, UserRound } from "lucide-react";
+import { Building2, LogIn, LogOut, Moon, ShieldCheck, Sun, UserRound } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 interface AppShellProps {
   children: ReactNode;
 }
+
+const BPA_LOGO = "https://customer-assets-7cd3h4nn.emergentagent.net/job_auction-live-17/artifacts/jmc80t8v_LOGO_PAPBB_JEMBER.png";
 
 export default function AppShell({ children }: AppShellProps) {
   const location = useLocation();
@@ -52,8 +54,8 @@ export default function AppShell({ children }: AppShellProps) {
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-[#0d203d]/95" data-testid="site-header">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link to="/" className="group mr-auto flex min-w-[220px] items-center gap-3" data-testid="brand-home-link">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#0f2c59] text-[#f8e7aa] shadow-md shadow-[#0f2c59]/20 transition-transform duration-200 group-hover:-rotate-3" data-testid="brand-mark">
-              <Gavel size={21} strokeWidth={2.3} />
+            <span className="grid h-11 w-11 place-items-center overflow-hidden rounded-xl bg-black shadow-md shadow-[#0f2c59]/20 transition-transform duration-200 group-hover:-rotate-3" data-testid="brand-mark">
+              <img src={BPA_LOGO} alt="Logo BPA Kejaksaan Negeri Jember" className="h-full w-full object-cover" data-testid="header-bpa-logo" />
             </span>
             <span>
               <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#c59b27]" data-testid="brand-kicker">Kejaksaan Negeri</span>
@@ -63,6 +65,7 @@ export default function AppShell({ children }: AppShellProps) {
 
           <nav className="order-3 flex w-full items-center gap-1 overflow-x-auto border-t border-slate-100 pt-2 text-sm sm:order-2 sm:w-auto sm:border-0 sm:pt-0" aria-label="Navigasi utama" data-testid="main-navigation">
             <Link to="/" className={`rounded-lg px-3 py-2 font-semibold transition-colors ${isActive("/") ? "bg-[#eff4fb] text-[#0f2c59]" : "text-slate-600 hover:bg-slate-50 hover:text-[#0f2c59] dark:text-slate-300 dark:hover:bg-slate-800"}`} data-testid="nav-catalog-link">Katalog Lelang</Link>
+            <Link to="/rekap" className={`rounded-lg px-3 py-2 font-semibold transition-colors ${isActive("/rekap") ? "bg-[#eff4fb] text-[#0f2c59]" : "text-slate-600 hover:bg-slate-50 hover:text-[#0f2c59] dark:text-slate-300 dark:hover:bg-slate-800"}`} data-testid="nav-results-link">Rekap Hasil</Link>
             <Link to="/dashboard" className={`rounded-lg px-3 py-2 font-semibold transition-colors ${isActive("/dashboard") ? "bg-[#eff4fb] text-[#0f2c59]" : "text-slate-600 hover:bg-slate-50 hover:text-[#0f2c59] dark:text-slate-300 dark:hover:bg-slate-800"}`} data-testid="nav-dashboard-link">Dashboard</Link>
             {user?.role === "admin" && <Link to="/admin" className={`rounded-lg px-3 py-2 font-semibold transition-colors ${isActive("/admin") ? "bg-[#eff4fb] text-[#0f2c59]" : "text-slate-600 hover:bg-slate-50 hover:text-[#0f2c59] dark:text-slate-300 dark:hover:bg-slate-800"}`} data-testid="nav-admin-link">Panel Petugas</Link>}
           </nav>
@@ -86,7 +89,7 @@ export default function AppShell({ children }: AppShellProps) {
       <main>{children}</main>
       <footer className="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-[#0d203d]" data-testid="site-footer">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-8 text-sm text-slate-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <span className="flex items-center gap-2 font-semibold text-[#0f2c59] dark:text-slate-100" data-testid="footer-agency"><Building2 size={16} /> Kejaksaan Negeri Jember</span>
+          <span className="flex items-center gap-2 font-semibold text-[#0f2c59] dark:text-slate-100" data-testid="footer-agency"><img src={BPA_LOGO} alt="Logo BPA" className="h-8 w-8 rounded-lg object-cover" data-testid="footer-bpa-logo" /> Kejaksaan Negeri Jember</span>
           <span data-testid="footer-disclaimer">Portal demo layanan lelang digital yang mengutamakan transparansi publik.</span>
           <span className="flex items-center gap-1" data-testid="footer-security"><ShieldCheck size={15} />Akses terenkripsi &amp; tercatat</span>
         </div>

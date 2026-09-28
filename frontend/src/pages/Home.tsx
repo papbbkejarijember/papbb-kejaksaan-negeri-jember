@@ -12,6 +12,9 @@ import { apiGet } from "@/lib/api";
 import { formatDate, formatRupiah, statusLabel } from "@/lib/format";
 import type { Auction, AuctionStatus } from "@/lib/types";
 
+const BPA_BANNER = "https://customer-assets-7cd3h4nn.emergentagent.net/job_auction-live-17/artifacts/0lcc2jhj_Desain%20tanpa%20judul.png";
+const BPA_LOGO = "https://customer-assets-7cd3h4nn.emergentagent.net/job_auction-live-17/artifacts/jmc80t8v_LOGO_PAPBB_JEMBER.png";
+
 const statusStyles: Record<AuctionStatus, string> = {
   ongoing: "border-green-200 bg-green-50 text-green-800",
   upcoming: "border-blue-200 bg-blue-50 text-blue-800",
@@ -67,14 +70,16 @@ export default function Home() {
     <AppShell>
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
         <section className="relative overflow-hidden rounded-2xl border border-[#c59b27]/30 bg-gradient-to-br from-[#0f2c59] via-[#163b72] to-[#0a1d3c] px-6 py-10 text-white shadow-xl sm:px-10 lg:py-14" data-testid="hero-section">
+          <img src={BPA_BANNER} alt="Identitas Bidang Pemulihan Aset dan Pengelolaan Barang Bukti" className="absolute inset-0 h-full w-full object-cover opacity-20 mix-blend-screen" data-testid="hero-bpa-banner" />
           <div className="absolute -right-24 -top-28 h-80 w-80 rounded-full border-[38px] border-[#c59b27]/10" />
           <div className="absolute bottom-0 right-1/4 h-24 w-24 rounded-full bg-[#c59b27]/10 blur-2xl" />
+          <img src={BPA_LOGO} alt="Logo BPA Kejaksaan Negeri Jember" className="absolute right-10 top-1/2 hidden h-64 w-64 -translate-y-1/2 rounded-full object-cover opacity-95 shadow-2xl ring-1 ring-[#e5c158]/50 lg:block" data-testid="hero-bpa-logo" />
           <div className="relative max-w-3xl animate-[slide-up_500ms_ease-out]">
             <div className="mb-5 flex flex-wrap gap-2 text-[11px] font-bold uppercase tracking-[0.15em]">
               <span className="rounded-full bg-white/10 px-3 py-1.5 text-[#f8e7aa]" data-testid="hero-official-badge"><ShieldCheck size={13} className="mr-1 inline" /> Resmi &amp; Legal</span>
               <span className="rounded-full bg-white/10 px-3 py-1.5 text-slate-200" data-testid="hero-transparent-badge"><BadgeCheck size={13} className="mr-1 inline" /> Transparan</span>
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl" data-testid="hero-title">Lelang negara yang terbuka, tertib, dan dapat dipercaya.</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:max-w-2xl lg:text-5xl" data-testid="hero-title">Lelang negara yang terbuka, tertib, dan dapat dipercaya.</h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg" data-testid="hero-description">Temukan informasi lelang barang rampasan dan sitaan negara yang dikelola Kejaksaan Negeri Jember dengan proses yang transparan untuk masyarakat.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a href="#katalog" className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#c59b27] px-5 text-sm font-extrabold text-[#0a1d3c] shadow-lg shadow-black/10 transition-colors hover:bg-[#e5c158]" data-testid="hero-catalog-button">Jelajahi katalog <ArrowRight size={16} /></a>

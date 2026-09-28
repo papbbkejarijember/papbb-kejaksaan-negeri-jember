@@ -1,14 +1,23 @@
-import uuid
-from datetime import datetime, timezone
+import os
 
 from fastapi import APIRouter, Request
 
 from lib.auth import get_current_user
 from lib.db import db
-from models.notification import Notification, NotificationTestCreate, NotificationTestResponse
+from lib.email_service import email_mode, record_mock_whatsapp, send_email_notification
+from models.notification import Notification, NotificationConfig, NotificationTestCreate, NotificationTestResponse
 
 
 router = APIRouter()
+
+
+@router.get("/config", response_model=NotificationConfig)
+async def notification_config():
+    return NotificationConfig(
+        email_mode=email_mode(),
+        whatsapp_mode="mock",
+        sender_email=os.environ.get("BREVO_SENDER_EMAIL"),
+    )
 
 
 @router.get("", response_model=list[Notification])
@@ -21,19 +30,20 @@ async def list_notifications(request: Request):
 @router.post("/test", response_model=NotificationTestResponse)
 async def test_notification(payload: NotificationTestCreate, request: Request):
     user = await get_current_user(request)
-    created_at = datetime.now(timezone.utc).isoformat()
     created = []
     for channel in dict.fromkeys(payload.channels):
-        document = {
-            "id": str(uuid.uuid4()),
-            "user_id": user["id"],
-            "channel": channel,
-            "subject": payload.subject,
-            "message": payload.message,
-            "status": "simulated",
-            "provider": "mock",
-            "created_at": created_at,
-        }
-        await db.notifications.insert_one(document)
-        created.append(Notification(**document))
-    return NotificationTestResponse(status="simulated", notifications=created)
+        if channel == "email":
+            created.append(
+                await send_email_notification(
+                    user_id=user["id"], recipient=user["email"], subject=payload.subject,
+                    message=payload.message, event="notification_test"
+                )
+            )
+        else:
+            created.append(
+                await record_mock_whatsapp(
+                    user_id=user["id"], subject=payload.subject, message=payload.message, event="notification_test"
+                )
+            )
+    overall = "failed" if any(item.status == "failed" for item in created) else "submitted" if any(item.status == "submitted" for item in created) else "simulated"
+    return NotificationTestResponse(status=overall, notifications=created)

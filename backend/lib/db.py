@@ -28,6 +28,10 @@ INDEXES: dict[str, list[IndexModel]] = {
     "bids": [IndexModel([("auction_id", ASCENDING), ("created_at", DESCENDING)], name="auction_created")],
     "notifications": [IndexModel([("user_id", ASCENDING), ("created_at", DESCENDING)], name="user_created")],
     "notification_preferences": [IndexModel([("user_id", ASCENDING)], name="user_unique", unique=True)],
+    "identity_verifications": [
+        IndexModel([("user_id", ASCENDING)], name="user_unique", unique=True),
+        IndexModel([("status", ASCENDING), ("submitted_at", DESCENDING)], name="status_submitted"),
+    ],
 }
 
 

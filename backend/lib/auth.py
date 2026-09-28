@@ -34,6 +34,7 @@ def public_user(doc: dict) -> UserPublic:
         full_name=doc["full_name"],
         role=doc["role"],
         phone=doc.get("phone"),
+        verification_status=doc.get("verification_status", "approved" if doc.get("role") == "admin" else "not_submitted"),
         created_at=doc["created_at"],
     )
 

@@ -20,9 +20,18 @@ class Notification(BaseModel):
     message: str
     status: Literal["simulated", "submitted", "failed"]
     provider: str
+    provider_message_id: str | None = None
+    event: str | None = None
+    error: str | None = None
     created_at: str
 
 
 class NotificationTestResponse(BaseModel):
     status: str
     notifications: list[Notification]
+
+
+class NotificationConfig(BaseModel):
+    email_mode: Literal["brevo", "mock"]
+    whatsapp_mode: Literal["mock"]
+    sender_email: str | None = None

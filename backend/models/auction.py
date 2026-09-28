@@ -20,6 +20,17 @@ class AuctionCreate(BaseModel):
     ends_at: str = Field(min_length=10, max_length=40)
 
 
+class AuctionUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=5, max_length=180)
+    category: str | None = Field(default=None, min_length=2, max_length=60)
+    description: str | None = Field(default=None, min_length=10, max_length=2000)
+    location: str | None = Field(default=None, min_length=2, max_length=180)
+    limit_price: float | None = Field(default=None, gt=0)
+    increment: float | None = Field(default=None, gt=0)
+    starts_at: str | None = Field(default=None, min_length=10, max_length=40)
+    ends_at: str | None = Field(default=None, min_length=10, max_length=40)
+
+
 class Auction(BaseModel):
     id: str
     title: str
@@ -33,6 +44,9 @@ class Auction(BaseModel):
     status: AuctionStatus
     highest_bid: float | None = None
     bid_count: int = 0
+    winner_name: str | None = None
+    winning_bid: float | None = None
+    closed_at: str | None = None
     created_at: str
 
 
@@ -51,6 +65,12 @@ class Bid(BaseModel):
 
 class AuctionDetail(Auction):
     bids: list[Bid] = Field(default_factory=list)
+
+
+class AuctionReport(BaseModel):
+    generated_at: str
+    auction: Auction
+    bids: list[Bid]
 
 
 class ParticipantDashboard(BaseModel):
