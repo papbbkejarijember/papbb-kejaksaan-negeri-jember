@@ -1,0 +1,128 @@
+{
+  "project_info": {
+    "title": "Portal Lelang Barang Rampasan - Kejaksaan Negeri Jember",
+    "app_type": "hybrid_fullstack",
+    "agency": "Kejaksaan Negeri Jember",
+    "version": "1.0.0",
+    "target_audience": "Masyarakat umum, kolektor, investor, dan pejabat pengawas Kejaksaan Negeri Jember"
+  },
+  "design_archetype": {
+    "name": "Swiss Government & High-Trust Official",
+    "emotional_story": "Wibawa Hukum, Transparansi Publik, dan Kemudahan Akses Lelang Negara",
+    "theme_preference": "Light Mode default (Profesional Pemerintahan), dengan toggle Dark Mode (Slate Navy)",
+    "aesthetic_principles": [
+      "Warna Utama Biru Tua Kejaksaan dikombinasikan dengan Aksen Emas Lambang Kejaksaan RI",
+      "Satu-titik fokus per layar dengan kontras tinggi untuk informasi nominal penawaran & countdown lelang",
+      "Karakteristik antarmuka resmi pemerintah: Rapi, terstruktur, bebas clutter, mudah dibaca oleh semua kalangan",
+      "Badge status yang tegas untuk membedakan lelang Akan Datang (Biru), Berlangsung (Hijau/Emas), dan Selesai (Abu-abu)"
+    ]
+  },
+  "colors": {
+    "primary_navy": {
+      "main": "#0F2C59",
+      "hover": "#163B72",
+      "light": "#EFF4FB",
+      "dark": "#0A1D3C"
+    },
+    "gold_accent": {
+      "main": "#C59B27",
+      "hover": "#B3891E",
+      "light": "#FEF8EA",
+      "border": "#E5C158"
+    },
+    "neutral_light": {
+      "background": "#F8FAFC",
+      "card": "#FFFFFF",
+      "border": "#E2E8F0",
+      "muted": "#F1F5F9"
+    },
+    "text": {
+      "primary": "#0F172A",
+      "secondary": "#475569",
+      "muted": "#64748B",
+      "inverse": "#FFFFFF"
+    },
+    "status": {
+      "ongoing_green": "#166534",
+      "ongoing_bg": "#DCFCE7",
+      "upcoming_blue": "#1E40AF",
+      "upcoming_bg": "#DBEAFE",
+      "ended_gray": "#475569",
+      "ended_bg": "#F1F5F9",
+      "warning_amber": "#D97706",
+      "warning_bg": "#FEF3C7"
+    }
+  },
+  "typography": {
+    "font_family_heading": "'Geist Variable', sans-serif",
+    "font_family_body": "'Geist Variable', sans-serif",
+    "hierarchy": {
+      "h1_hero": "text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight",
+      "h2_section": "text-2xl sm:text-3xl font-bold tracking-tight",
+      "h3_card": "text-lg sm:text-xl font-semibold",
+      "body_lead": "text-base sm:text-lg text-slate-600 leading-relaxed",
+      "body_regular": "text-sm sm:text-base text-slate-700 leading-normal",
+      "caption": "text-xs font-medium text-slate-500 uppercase tracking-wider"
+    }
+  },
+  "layout_and_spacing": {
+    "container_max_width": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "section_spacing": "py-12 sm:py-16 lg:py-20",
+    "card_padding": "p-5 sm:p-6",
+    "grid_catalogs": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6",
+    "grid_dashboard": "grid grid-cols-1 lg:grid-cols-12 gap-8"
+  },
+  "key_components": {
+    "government_header": {
+      "top_bar": "bg-[#091C3A] text-slate-200 text-xs py-2 px-4 flex justify-between items-center border-b border-amber-500/30",
+      "main_nav": "sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm",
+      "elements": ["Logo Kejaksaan RI + Kejari Jember", "Search Bar Lelang", "Navigasi Katalog & Jadwal", "Auth Buttons / User Profile", "Theme Toggle"]
+    },
+    "hero_section": {
+      "style": "bg-gradient-to-r from-[#0F2C59] via-[#163B72] to-[#0A1D3C] text-white py-12 px-6 rounded-2xl relative overflow-hidden shadow-xl border border-amber-500/20",
+      "content": "Pengumuman Lelang Resmi Barang Rampasan & Sitaan Negara Kejaksaan Negeri Jember",
+      "badges": ["Resmi & Legal", "Terintegrasi DJKN / KPKNL", "Transparan"]
+    },
+    "auction_card": {
+      "container": "group bg-white rounded-xl border border-slate-200 hover:border-[#C59B27] hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden relative",
+      "image_container": "relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100",
+      "badge": "absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold shadow-md",
+      "price_tag": "text-xl font-bold text-[#0F2C59]"
+    },
+    "empty_state": {
+      "container": "border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center bg-slate-50/50 my-8",
+      "action": "Tombol reset filter atau Hubungi Panitia Lelang Kejari Jember"
+    },
+    "bidding_modal_and_panel": {
+      "timer": "bg-amber-50 border border-amber-200 rounded-lg p-3 text-amber-900 font-mono text-center text-lg font-bold",
+      "increment_selector": "grid grid-cols-3 gap-2 my-4",
+      "bid_history": "max-h-60 overflow-y-auto divide-y divide-slate-100 text-sm"
+    },
+    "notification_badge": {
+      "channels": ["Email (Sistem)", "WhatsApp Gateway (Kejari Official)"]
+    }
+  },
+  "image_urls": {
+    "hero_banner": "https://images.unsplash.com/photo-1785905372527-0b8319347032?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "categories": {
+      "kendaraan": "https://images.unsplash.com/photo-1780594774174-01b48ac0ac8b?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "motor": "https://images.unsplash.com/photo-1609630875171-b1321377ee65?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "elektronik": "https://images.unsplash.com/photo-1426024084828-5da21e13f5dc?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "properti": "https://images.unsplash.com/photo-1762117360986-9753aef7680f?crop=entropy&cs=srgb&fm=jpg&q=85"
+    }
+  },
+  "testing_and_accessibility": {
+    "data_testid_rules": "Setiap elemen interaktif (button, input, tab, card, modal, row) WAJIB menggunakan attribute data-testid dalam format kebab-case",
+    "contrast_compliance": "WCAG AA minimum 4.5:1 untuk teks normal dan 3:1 untuk tombol emas/biru",
+    "mobile_rules": "Ukuran target sentuh minimal 44px x 44px, navigasi bawah atau drawer drawer sheet untuk layar <640px"
+  },
+  "instructions_to_main_agent": [
+    "Gunakan komponen berbasis React (.js / .jsx), pastikan tidak menggunakan Sintaks TypeScript (.tsx) yang tidak dikompilasi jika file utama ber-ekstensi .js.",
+    "Gunakan Lucide-react untuk ikon resmi (Gavel, ShieldCheck, Calendar, Clock, DollarSign, Bell, User, Lock, Building, FileText, CheckCircle2, Phone, Mail).",
+    "Pastikan ketersediaan 3 peran/tampilan utama: Katalog Publik, Dashboard Peserta Lelang, dan Panel Admin Pengelola Lelang Kejari Jember.",
+    "Implementasikan fitur simulasi Notifikasi WhatsApp/Email untuk pendaftaran lelang, penawaran terlampaui (outbid), dan pengumuman pemenang lelang.",
+    "Sediakan fitur penyaringan katalog berdasarkan Kategori (Kendaraan, Properti, Elektronik, Barang Sitaan Lain), Status (Berlangsung, Akan Datang, Selesai), dan Rentang Harga Limit.",
+    "Gunakan Sonner untuk notifikasi toast interaktif (misal: 'Penawaran Rp 15.500.000 berhasil dikirim!').",
+    "Semua elemen interaktif harus menyertakan atribut data-testid yang jelas (contoh: data-testid='submit-bid-button', data-testid='admin-create-auction-btn')."
+  ]
+}

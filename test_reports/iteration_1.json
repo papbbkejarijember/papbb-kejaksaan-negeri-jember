@@ -1,0 +1,35 @@
+{
+  "passed": 13,
+  "failed": 1,
+  "flaky": 0,
+  "blocked": 0,
+  "test_error": 0,
+  "bugs": [
+    {
+      "severity": "high",
+      "criterion": "Logout mengakhiri sesi dan membersihkan tampilan akun",
+      "evidence": "Browser check logout-clears-session: after POST logout, header returned to Masuk and API cross-check GET http://localhost:8001/api/auth/me returned 200 null, but navigating to /dashboard remained at http://localhost:3000/dashboard instead of redirecting to /auth. Screenshot: /root/.emergent/automation_output/20260928_033042_734/logout-clears-session-failure.png. Backend protected route is healthy: the live pytest assertion GET /api/auctions/dashboard/participant after logout returned 401."
+    }
+  ],
+  "action_items": [
+    "Fix participant Dashboard protected-route redirect: after unauthenticated navigation to /dashboard, reliably navigate to /auth (effect currently does not react to the fetched-null state).",
+    "Retest logout-clears-session after frontend fix."
+  ],
+  "retest_needed": true,
+  "checks": [
+    {"criterion":"Katalog publik portal Kejaksaan Negeri Jember dapat dibuka tanpa login dan saat belum ada data menampilkan empty state, pencarian, serta filter kategori/status","name":"public-catalog-empty-filters","lane":"backend","status":"passed","evidence":"GET /api/auctions?search=tscheck-no-such-item&category=all&status=all -> 200 []"},
+    {"criterion":"Katalog publik portal Kejaksaan Negeri Jember dapat dibuka tanpa login dan saat belum ada data menampilkan empty state, pencarian, serta filter kategori/status","name":"public-catalog-empty-filters","lane":"browser","status":"passed","evidence":"Rendered hero, empty state for unique search, category/status filters, and reset control; screenshot captured."},
+    {"criterion":"Admin dapat login menggunakan akun demo dan melihat panel pengelola","name":"admin-login-panel","lane":"backend","status":"passed","evidence":"POST /api/auth/login demo admin -> 200; GET /api/auctions/dashboard/admin -> 200 with total_auctions and auctions."},
+    {"criterion":"Admin dapat login menggunakan akun demo dan melihat panel pengelola","name":"admin-login-panel","lane":"browser","status":"passed","evidence":"Demo admin login navigated to /admin; admin title, statistics, and create form visible."},
+    {"criterion":"Admin dapat membuat objek lelang baru dengan jadwal aktif","name":"admin-creates-active-auction","lane":"backend","status":"passed","evidence":"POST /api/auctions with tscheck-create-active -> 200 ongoing; filtered GET returned created id."},
+    {"criterion":"Admin dapat membuat objek lelang baru dengan jadwal aktif","name":"admin-creates-active-auction","lane":"browser","status":"passed","evidence":"Admin form submitted unique tscheck-browser title; row and public catalog card displayed it."},
+    {"criterion":"Peserta dapat mendaftar atau login dan masuk ke dashboard peserta","name":"participant-login-dashboard","lane":"backend","status":"passed","evidence":"POST /api/auth/register unique participant -> 200; GET /api/auctions/dashboard/participant -> 200 with bids and notifications."},
+    {"criterion":"Peserta dapat mendaftar atau login dan masuk ke dashboard peserta","name":"participant-login-dashboard","lane":"browser","status":"passed","evidence":"Demo participant login navigated to /dashboard; stats, bid history, and notification card visible."},
+    {"criterion":"Peserta dapat membuka detail lelang berlangsung dan mengirim penawaran minimum","name":"participant-sends-minimum-bid","lane":"backend","status":"passed","evidence":"POST /api/{auction_id}/bids minimum amount -> 200; detail GET -> 200 bid_count 1."},
+    {"criterion":"Peserta dapat membuka detail lelang berlangsung dan mengirim penawaran minimum","name":"participant-sends-minimum-bid","lane":"browser","status":"passed","evidence":"Participant opened unique ongoing auction, submitted displayed minimum, and history showed 1 kali."},
+    {"criterion":"Notifikasi email dan WhatsApp tersedia dalam mode demo","name":"participant-notification-demo","lane":"backend","status":"passed","evidence":"POST /api/notifications/test channels email+whatsapp -> 200 status simulated; response notifications provider mock."},
+    {"criterion":"Notifikasi email dan WhatsApp tersedia dalam mode demo","name":"participant-notification-demo","lane":"browser","status":"passed","evidence":"Dashboard recorded WhatsApp simulation and displayed MOCK badge. DEMO MOCK integration verified."},
+    {"criterion":"Logout mengakhiri sesi dan membersihkan tampilan akun","name":"logout-clears-session","lane":"backend","status":"passed","evidence":"POST /api/auth/logout -> 204; GET /api/auth/me -> 200 null; protected participant dashboard -> 401."},
+    {"criterion":"Logout mengakhiri sesi dan membersihkan tampilan akun","name":"logout-clears-session","lane":"browser","status":"failed","evidence":"Logout header state passed, but direct /dashboard remained /dashboard rather than redirecting /auth; failure screenshot captured and API health cross-check passed."}
+  ]
+}
