@@ -25,4 +25,4 @@ Portal publik untuk pengumuman dan partisipasi lelang barang rampasan/sitaan neg
 4. Peserta berstatus `approved` membuka detail objek yang sedang berlangsung dan mengirim nominal penawaran minimal.
 5. Admin dapat mengedit objek yang belum selesai, menutup lelang, menetapkan penawar tertinggi sebagai pemenang, dan mencetak berita acara.
 6. Halaman rekap publik menampilkan lelang selesai, nama pemenang tersamarkan, dan nilai akhir.
-7. Email dikirim melalui Brevo ketika kredensial aktif, dengan status provider tersimpan. WhatsApp tetap **DEMO MOCK**.
+7. Email dikirim melalui Brevo ketika kredensial aktif. Webhook bearer-authenticated mencatat event `delivered`, `opened`, `softBounce`, `hardBounce`, `blocked`, `invalid`, dan `error` secara idempoten ke timeline peserta yang diperbarui setiap 15 detik. WhatsApp tetap **DEMO MOCK**.

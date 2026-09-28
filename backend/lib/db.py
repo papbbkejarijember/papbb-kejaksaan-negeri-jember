@@ -26,12 +26,16 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("id", ASCENDING)], name="id_unique", unique=True),
     ],
     "bids": [IndexModel([("auction_id", ASCENDING), ("created_at", DESCENDING)], name="auction_created")],
-    "notifications": [IndexModel([("user_id", ASCENDING), ("created_at", DESCENDING)], name="user_created")],
+    "notifications": [
+        IndexModel([("user_id", ASCENDING), ("created_at", DESCENDING)], name="user_created"),
+        IndexModel([("provider_message_id", ASCENDING)], name="provider_message_id", sparse=True),
+    ],
     "notification_preferences": [IndexModel([("user_id", ASCENDING)], name="user_unique", unique=True)],
     "identity_verifications": [
         IndexModel([("user_id", ASCENDING)], name="user_unique", unique=True),
         IndexModel([("status", ASCENDING), ("submitted_at", DESCENDING)], name="status_submitted"),
     ],
+    "brevo_webhook_events": [IndexModel([("event_key", ASCENDING)], name="event_key_unique", unique=True)],
 }
 
 

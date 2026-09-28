@@ -5,7 +5,13 @@ from fastapi import APIRouter, Request
 from lib.auth import get_current_user
 from lib.db import db
 from lib.email_service import email_mode, record_mock_whatsapp, send_email_notification
-from models.notification import Notification, NotificationConfig, NotificationTestCreate, NotificationTestResponse
+from models.notification import (
+    Notification,
+    NotificationConfig,
+    NotificationHistoryResponse,
+    NotificationTestCreate,
+    NotificationTestResponse,
+)
 
 
 router = APIRouter()
@@ -25,6 +31,16 @@ async def list_notifications(request: Request):
     user = await get_current_user(request)
     documents = await db.notifications.find({"user_id": user["id"]}).sort("created_at", -1).to_list(100)
     return [Notification(**{key: value for key, value in doc.items() if key != "_id"}) for doc in documents]
+
+
+@router.get("/{notification_id}/status-history", response_model=NotificationHistoryResponse)
+async def notification_status_history(notification_id: str, request: Request):
+    user = await get_current_user(request)
+    document = await db.notifications.find_one({"id": notification_id, "user_id": user["id"]})
+    if not document:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Riwayat notifikasi tidak ditemukan")
+    return NotificationHistoryResponse(status=document["status"], history=document.get("status_history", []))
 
 
 @router.post("/test", response_model=NotificationTestResponse)

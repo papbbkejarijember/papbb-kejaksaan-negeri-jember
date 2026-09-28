@@ -39,6 +39,7 @@ async def send_email_notification(
         "error": None,
         "auction_id": auction_id,
         "created_at": created_at,
+        "updated_at": created_at,
     }
     if email_mode() == "brevo":
         payload = {
@@ -79,6 +80,9 @@ async def send_email_notification(
             document["provider"] = "brevo"
             document["status"] = "failed"
             document["error"] = type(exc).__name__
+    document["status_history"] = [
+        {"status": document["status"], "provider_event": None, "at": created_at, "provider_ts": None}
+    ]
     await db.notifications.insert_one(document)
     return Notification(**document)
 
@@ -86,6 +90,7 @@ async def send_email_notification(
 async def record_mock_whatsapp(
     *, user_id: str, subject: str, message: str, event: str, auction_id: str | None = None
 ) -> Notification:
+    created_at = datetime.now(timezone.utc).isoformat()
     document = {
         "id": str(uuid.uuid4()),
         "user_id": user_id,
@@ -98,7 +103,11 @@ async def record_mock_whatsapp(
         "event": event,
         "error": None,
         "auction_id": auction_id,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": created_at,
+        "updated_at": created_at,
+        "status_history": [
+            {"status": "simulated", "provider_event": None, "at": created_at, "provider_ts": None}
+        ],
     }
     await db.notifications.insert_one(document)
     return Notification(**document)

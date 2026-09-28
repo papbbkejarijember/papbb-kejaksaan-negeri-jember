@@ -13,12 +13,14 @@ load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
 from lib.db import client, db, ensure_indexes
+from lib.brevo_webhook import ensure_brevo_webhook
 
 
 # Startup runs before the yield, shutdown after it. Add your own setup/teardown here.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.index_task = asyncio.create_task(ensure_indexes())  # background: a big index build must not block boot
+    await ensure_brevo_webhook()
     yield
     client.close()
 
@@ -34,11 +36,12 @@ async def root():
     return {"message": "Portal Lelang Kejaksaan Negeri Jember", "mode": "demo"}
 
 
-from routers import auth, auctions, notifications
+from routers import auth, auctions, notifications, webhooks
 
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(auctions.router, prefix="/auctions", tags=["auctions"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+api_router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 
 app.add_middleware(
     CORSMiddleware,

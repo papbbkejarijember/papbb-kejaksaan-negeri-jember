@@ -1,6 +1,7 @@
 export type UserRole = "participant" | "admin";
 export type AuctionStatus = "upcoming" | "ongoing" | "ended";
 export type NotificationChannel = "email" | "whatsapp";
+export type NotificationStatus = "simulated" | "submitted" | "delivered" | "opened" | "soft_bounce" | "hard_bounce" | "blocked" | "invalid" | "failed";
 export type VerificationStatus = "not_submitted" | "pending" | "approved" | "rejected";
 
 export interface User {
@@ -55,12 +56,21 @@ export interface Notification {
   channel: NotificationChannel;
   subject: string;
   message: string;
-  status: "simulated" | "submitted" | "failed";
+  status: NotificationStatus;
   provider: string;
   provider_message_id: string | null;
   event: string | null;
   error: string | null;
+  status_history: NotificationStatusEvent[];
+  updated_at: string | null;
   created_at: string;
+}
+
+export interface NotificationStatusEvent {
+  status: NotificationStatus;
+  provider_event: string | null;
+  at: string;
+  provider_ts: string | number | null;
 }
 
 export interface ParticipantDashboard {
