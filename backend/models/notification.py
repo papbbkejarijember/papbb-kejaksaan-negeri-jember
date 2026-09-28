@@ -53,3 +53,29 @@ class NotificationConfig(BaseModel):
 class NotificationHistoryResponse(BaseModel):
     status: NotificationStatus
     history: list[NotificationStatusEvent]
+
+
+class EmailAnalyticsTotals(BaseModel):
+    sent: int
+    delivered: int
+    opened: int
+    failed: int
+
+
+class EmailAnalyticsPoint(BaseModel):
+    date: str
+    sent: int
+    delivered: int
+    opened: int
+    failed: int
+
+
+class EmailAnalytics(BaseModel):
+    range: Literal["7d", "30d", "all"]
+    from_date: str | None = None
+    to_date: str
+    totals: EmailAnalyticsTotals
+    delivery_rate: float
+    open_rate: float
+    failure_rate: float
+    trend: list[EmailAnalyticsPoint]

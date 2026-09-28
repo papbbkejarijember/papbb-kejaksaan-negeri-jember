@@ -29,6 +29,7 @@ INDEXES: dict[str, list[IndexModel]] = {
     "notifications": [
         IndexModel([("user_id", ASCENDING), ("created_at", DESCENDING)], name="user_created"),
         IndexModel([("provider_message_id", ASCENDING)], name="provider_message_id", sparse=True),
+        IndexModel([("provider", ASCENDING), ("channel", ASCENDING), ("created_at", DESCENDING)], name="provider_channel_created"),
     ],
     "notification_preferences": [IndexModel([("user_id", ASCENDING)], name="user_unique", unique=True)],
     "identity_verifications": [

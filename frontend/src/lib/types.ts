@@ -126,6 +126,32 @@ export interface NotificationTestResponse {
   notifications: Notification[];
 }
 
+export type EmailAnalyticsRange = "7d" | "30d" | "all";
+
+export interface EmailAnalyticsPoint {
+  date: string;
+  sent: number;
+  delivered: number;
+  opened: number;
+  failed: number;
+}
+
+export interface EmailAnalytics {
+  range: EmailAnalyticsRange;
+  from_date: string | null;
+  to_date: string;
+  totals: {
+    sent: number;
+    delivered: number;
+    opened: number;
+    failed: number;
+  };
+  delivery_rate: number;
+  open_rate: number;
+  failure_rate: number;
+  trend: EmailAnalyticsPoint[];
+}
+
 export interface AuctionReport {
   generated_at: string;
   auction: Auction;

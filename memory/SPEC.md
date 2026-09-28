@@ -26,3 +26,4 @@ Portal publik untuk pengumuman dan partisipasi lelang barang rampasan/sitaan neg
 5. Admin dapat mengedit objek yang belum selesai, menutup lelang, menetapkan penawar tertinggi sebagai pemenang, dan mencetak berita acara.
 6. Halaman rekap publik menampilkan lelang selesai, nama pemenang tersamarkan, dan nilai akhir.
 7. Email dikirim melalui Brevo ketika kredensial aktif. Webhook bearer-authenticated mencatat event `delivered`, `opened`, `softBounce`, `hardBounce`, `blocked`, `invalid`, dan `error` secara idempoten ke timeline peserta yang diperbarui setiap 15 detik. WhatsApp tetap **DEMO MOCK**.
+8. Panel admin menyediakan analitik email untuk 7 hari, 30 hari, dan sepanjang waktu: total diproses, rasio terkirim, rasio dibuka, rasio gagal, funnel status, dan tren harian.
