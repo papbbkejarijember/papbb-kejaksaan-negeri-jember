@@ -1,0 +1,9 @@
+crons:
+  - name: weekly-mongo-backup
+    description: "Creates an encrypted weekly MongoDB backup and retains objects for 90 days"
+    cron: "0 2 * * 0"
+    timezone: "Asia/Jakarta"
+    endpoint: "{{BASE_URL}}/api/cron/weekly-backup"
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    method: POST
+    enabled: false

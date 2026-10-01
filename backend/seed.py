@@ -1,54 +1,37 @@
 import asyncio
-from datetime import datetime, timezone
-import uuid
+import os
 
 from lib.auth import hash_password
+from lib.bootstrap import ensure_admin_account
 from lib.db import client, db, ensure_indexes
-
-
-ACCOUNTS = [
-    {
-        "email": "admin@kejari-jember.go.id",
-        "full_name": "Admin Kejari Jember",
-        "role": "admin",
-        "password": "AdminJember123!",
-        "phone": "6281234567890",
-        "verification_status": "approved",
-    },
-    {
-        "email": "peserta@kejari-jember.go.id",
-        "full_name": "Peserta Demo Jember",
-        "role": "participant",
-        "password": "PesertaJember123!",
-        "phone": "6281234567891",
-        "verification_status": "approved",
-    },
-]
+from lib.pii import encrypt_pii
 
 
 async def main():
-    for account in ACCOUNTS:
-        existing = await db.users.find_one({"email": account["email"]})
-        if existing:
+    await ensure_admin_account()
+    email = os.environ.get("ADMIN_EMAIL", "").strip().lower()
+    password = os.environ.get("ADMIN_BOOTSTRAP_PASSWORD", "")
+    if email and password:
+        admin = await db.users.find_one({"email": email})
+        if admin:
             await db.users.update_one(
-                {"email": account["email"]},
-                {"$set": {"role": account["role"], "verification_status": account["verification_status"]}},
+                {"id": admin["id"]},
+                {"$set": {"password_hash": hash_password(password), "role": "admin", "verification_status": "approved"}},
             )
-            continue
-        user = {
-            "id": str(uuid.uuid4()),
-            "email": account["email"],
-            "full_name": account["full_name"],
-            "role": account["role"],
-            "phone": account["phone"],
-            "verification_status": account["verification_status"],
-            "password_hash": hash_password(account["password"]),
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-        await db.users.insert_one(user)
-        await db.notification_preferences.insert_one(
-            {"id": str(uuid.uuid4()), "user_id": user["id"], "email": True, "whatsapp": True}
+    await db.users.delete_many({"email": {"$in": ["admin@kejari-jember.go.id", "peserta@kejari-jember.go.id"]}})
+    async for document in db.identity_verifications.find({"nik": {"$exists": True}}):
+        await db.identity_verifications.update_one(
+            {"_id": document["_id"]},
+            {
+                "$set": {
+                    "nik_encrypted": encrypt_pii(document["nik"]),
+                    "address_encrypted": encrypt_pii(document.get("address", "")),
+                    "ktp_image_encrypted": encrypt_pii(document.get("ktp_image_data", "")),
+                },
+                "$unset": {"nik": "", "address": "", "ktp_image_data": ""},
+            },
         )
+    await db.sessions.delete_many({})
     await ensure_indexes()
     client.close()
 

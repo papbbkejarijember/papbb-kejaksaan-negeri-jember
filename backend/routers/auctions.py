@@ -3,9 +3,11 @@ import uuid
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
+from lib.audit import write_audit
 from lib.auth import public_user, require_role
 from lib.db import db
 from lib.email_service import record_mock_whatsapp, send_email_notification
+from lib.rate_limit import enforce_rate_limit
 from models.auction import (
     AdminDashboard,
     Auction,
@@ -54,6 +56,13 @@ def _auction(doc: dict) -> Auction:
     clean = _clean(doc)
     clean["status"] = _status(clean["starts_at"], clean["ends_at"], clean.get("manual_status"))
     return Auction(**clean)
+
+
+def _masked_bid(doc: dict) -> Bid:
+    clean = _clean(doc)
+    name = clean.get("bidder_name", "Peserta")
+    clean["bidder_name"] = " ".join(f"{part[:1]}***" for part in name.split())
+    return Bid(**clean)
 
 
 async def _get_auction(auction_id: str) -> dict:
@@ -134,12 +143,12 @@ async def auction_report(auction_id: str, request: Request):
 async def get_auction(auction_id: str):
     auction = await _get_auction(auction_id)
     bids = await db.bids.find({"auction_id": auction_id}).sort("created_at", -1).to_list(100)
-    return AuctionDetail(**_auction(auction).model_dump(), bids=[Bid(**_clean(bid)) for bid in bids])
+    return AuctionDetail(**_auction(auction).model_dump(), bids=[_masked_bid(bid) for bid in bids])
 
 
 @router.post("", response_model=Auction)
 async def create_auction(payload: AuctionCreate, request: Request):
-    await require_role(request, "admin")
+    admin = await require_role(request, "admin")
     starts_at = _normalise_datetime(payload.starts_at)
     ends_at = _normalise_datetime(payload.ends_at)
     if _parse_datetime(ends_at) <= _parse_datetime(starts_at):
@@ -165,12 +174,13 @@ async def create_auction(payload: AuctionCreate, request: Request):
         "created_at": _now().isoformat(),
     }
     await db.auctions.insert_one(document)
+    await write_audit(actor=admin, action="auction_created", target_type="auction", target_id=document["id"], request=request)
     return _auction(document)
 
 
 @router.patch("/{auction_id}", response_model=Auction)
 async def update_auction(auction_id: str, payload: AuctionUpdate, request: Request):
-    await require_role(request, "admin")
+    admin = await require_role(request, "admin")
     current = await _get_auction(auction_id)
     if _auction(current).status == "ended":
         raise HTTPException(status_code=409, detail="Lelang yang selesai tidak dapat diedit")
@@ -185,13 +195,14 @@ async def update_auction(auction_id: str, payload: AuctionUpdate, request: Reque
         raise HTTPException(status_code=422, detail="Waktu selesai harus setelah waktu mulai")
     if changes:
         await db.auctions.update_one({"id": auction_id}, {"$set": changes})
+        await write_audit(actor=admin, action="auction_updated", target_type="auction", target_id=auction_id, request=request, metadata={"fields": sorted(changes.keys())})
     updated = await _get_auction(auction_id)
     return _auction(updated)
 
 
 @router.post("/{auction_id}/close", response_model=Auction)
 async def close_auction(auction_id: str, request: Request):
-    await require_role(request, "admin")
+    admin = await require_role(request, "admin")
     auction = await _get_auction(auction_id)
     if auction.get("manual_status") == "ended":
         return _auction(auction)
@@ -206,6 +217,7 @@ async def close_auction(auction_id: str, request: Request):
         "winning_bid": winning_bid["amount"] if winning_bid else None,
     }
     await db.auctions.update_one({"id": auction_id}, {"$set": updates})
+    await write_audit(actor=admin, action="auction_closed", target_type="auction", target_id=auction_id, request=request, metadata={"has_winner": bool(winner)})
     if winner and winning_bid:
         message = f"Selamat, Anda ditetapkan sebagai pemenang {auction['title']} dengan nilai Rp {winning_bid['amount']:,.0f}."
         await send_email_notification(
@@ -223,6 +235,7 @@ async def close_auction(auction_id: str, request: Request):
 @router.post("/{auction_id}/bids", response_model=Bid)
 async def place_bid(auction_id: str, payload: BidCreate, request: Request):
     user = await require_role(request, "participant")
+    await enforce_rate_limit(request, scope="bid", identifier=user["id"], limit=30, window_seconds=60)
     if user.get("verification_status") != "approved":
         raise HTTPException(status_code=403, detail="Identitas peserta harus disetujui sebelum menawar")
     auction = await _get_auction(auction_id)

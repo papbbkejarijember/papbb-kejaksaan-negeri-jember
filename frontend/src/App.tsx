@@ -6,6 +6,7 @@ import Admin from "@/pages/Admin";
 import AuctionDetail from "@/pages/AuctionDetail";
 import Results from "@/pages/Results";
 import Report from "@/pages/Report";
+import Legal from "@/pages/Legal";
 
 // One <Route> per page in src/pages; BrowserRouter already wraps this in main.tsx.
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
       <Route path="/lelang/:id" element={<AuctionDetail />} />
       <Route path="/rekap" element={<Results />} />
       <Route path="/admin/berita-acara/:id" element={<Report />} />
+      <Route path="/legal" element={<Legal />} />
     </Routes>
   );
 }

@@ -89,7 +89,9 @@ async def send_email_notification(
 
 async def record_mock_whatsapp(
     *, user_id: str, subject: str, message: str, event: str, auction_id: str | None = None
-) -> Notification:
+) -> Notification | None:
+    if os.environ.get("WHATSAPP_ENABLED", "false").lower() != "true":
+        return None
     created_at = datetime.now(timezone.utc).isoformat()
     document = {
         "id": str(uuid.uuid4()),

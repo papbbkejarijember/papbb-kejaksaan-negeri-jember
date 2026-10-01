@@ -46,7 +46,7 @@ class NotificationTestResponse(BaseModel):
 
 class NotificationConfig(BaseModel):
     email_mode: Literal["brevo", "mock"]
-    whatsapp_mode: Literal["mock"]
+    whatsapp_mode: Literal["mock", "disabled"]
     sender_email: str | None = None
 
 

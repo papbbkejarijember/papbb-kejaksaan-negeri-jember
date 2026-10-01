@@ -37,6 +37,13 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("status", ASCENDING), ("submitted_at", DESCENDING)], name="status_submitted"),
     ],
     "brevo_webhook_events": [IndexModel([("event_key", ASCENDING)], name="event_key_unique", unique=True)],
+    "audit_logs": [IndexModel([("created_at", DESCENDING)], name="created_desc")],
+    "rate_limits": [
+        IndexModel([("key", ASCENDING)], name="key_unique", unique=True),
+        IndexModel([("expires_at", ASCENDING)], name="expires_ttl", expireAfterSeconds=0),
+    ],
+    "cron_runs": [IndexModel([("run_id", ASCENDING)], name="run_id_unique", unique=True)],
+    "backup_runs": [IndexModel([("created_at", DESCENDING)], name="created_desc")],
 }
 
 

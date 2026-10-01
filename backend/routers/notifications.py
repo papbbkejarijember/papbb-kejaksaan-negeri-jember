@@ -27,7 +27,7 @@ router = APIRouter()
 async def notification_config():
     return NotificationConfig(
         email_mode=email_mode(),
-        whatsapp_mode="mock",
+        whatsapp_mode="mock" if os.environ.get("WHATSAPP_ENABLED", "false").lower() == "true" else "disabled",
         sender_email=os.environ.get("BREVO_SENDER_EMAIL"),
     )
 
@@ -139,10 +139,13 @@ async def test_notification(payload: NotificationTestCreate, request: Request):
                 )
             )
         else:
-            created.append(
-                await record_mock_whatsapp(
-                    user_id=user["id"], subject=payload.subject, message=payload.message, event="notification_test"
-                )
+            if os.environ.get("WHATSAPP_ENABLED", "false").lower() != "true":
+                from fastapi import HTTPException
+                raise HTTPException(status_code=409, detail="Kanal WhatsApp belum diaktifkan")
+            item = await record_mock_whatsapp(
+                user_id=user["id"], subject=payload.subject, message=payload.message, event="notification_test"
             )
+            if item:
+                created.append(item)
     overall = "failed" if any(item.status == "failed" for item in created) else "submitted" if any(item.status == "submitted" for item in created) else "simulated"
     return NotificationTestResponse(status=overall, notifications=created)

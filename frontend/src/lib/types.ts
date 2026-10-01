@@ -113,12 +113,24 @@ export interface IdentitySubmission {
   submitted_at: string;
   reviewed_at: string | null;
   review_note: string | null;
+  consented_at: string | null;
 }
 
 export interface NotificationConfig {
   email_mode: "brevo" | "mock";
-  whatsapp_mode: "mock";
+  whatsapp_mode: "mock" | "disabled";
   sender_email: string | null;
+}
+
+export interface AuditLog {
+  id: string;
+  actor_id: string;
+  actor_role: string;
+  action: string;
+  target_type: string;
+  target_id: string;
+  created_at: string;
+  metadata: Record<string, unknown>;
 }
 
 export interface NotificationTestResponse {

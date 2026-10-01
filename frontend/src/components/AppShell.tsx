@@ -90,7 +90,7 @@ export default function AppShell({ children }: AppShellProps) {
       <footer className="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-[#0d203d]" data-testid="site-footer">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-8 text-sm text-slate-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <span className="flex items-center gap-2 font-semibold text-[#0f2c59] dark:text-slate-100" data-testid="footer-agency"><img src={BPA_LOGO} alt="Logo BPA" className="h-8 w-8 rounded-lg object-cover" data-testid="footer-bpa-logo" /> Kejaksaan Negeri Jember</span>
-          <span data-testid="footer-disclaimer">Portal demo layanan lelang digital yang mengutamakan transparansi publik.</span>
+          <span className="flex flex-wrap gap-3" data-testid="footer-legal-links"><Link to="/legal#privacy" className="hover:text-[#0f2c59] dark:hover:text-white" data-testid="footer-privacy-link">Kebijakan Privasi</Link><Link to="/legal#terms" className="hover:text-[#0f2c59] dark:hover:text-white" data-testid="footer-terms-link">Syarat Layanan</Link><Link to="/legal#contact" className="hover:text-[#0f2c59] dark:hover:text-white" data-testid="footer-contact-link">Kontak</Link></span>
           <span className="flex items-center gap-1" data-testid="footer-security"><ShieldCheck size={15} />Akses terenkripsi &amp; tercatat</span>
         </div>
       </footer>

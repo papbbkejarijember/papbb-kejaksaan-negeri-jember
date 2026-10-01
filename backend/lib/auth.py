@@ -12,18 +12,26 @@ from models.auth import Role, UserPublic
 SESSION_COOKIE = "kejari_session"
 
 
+PASSWORD_ROUNDS = 310_000
+
+
 def hash_password(password: str) -> str:
     salt = secrets.token_hex(16)
-    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 120_000).hex()
-    return f"{salt}${digest}"
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), PASSWORD_ROUNDS).hex()
+    return f"pbkdf2_sha256${PASSWORD_ROUNDS}${salt}${digest}"
 
 
 def verify_password(password: str, encoded: str) -> bool:
     try:
-        salt, expected = encoded.split("$", 1)
+        if encoded.startswith("pbkdf2_sha256$"):
+            _, rounds, salt, expected = encoded.split("$", 3)
+            iterations = int(rounds)
+        else:
+            salt, expected = encoded.split("$", 1)
+            iterations = 120_000
     except ValueError:
         return False
-    actual = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 120_000).hex()
+    actual = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), iterations).hex()
     return hmac.compare_digest(actual, expected)
 
 

@@ -45,3 +45,31 @@ async def aclient():
 
 
 # --- app-specific fixtures below this line ---
+
+SESSION_COOKIE_NAME = "kejari_session"
+
+
+def login_as(client: httpx.Client, email: str, password: str):
+    """Log in and force the Secure session cookie onto the client.
+
+    The backend issues the session cookie with the Secure attribute (by design,
+    for production hardening). Plain http.cookiejar / httpx will not re-send a
+    Secure cookie over a plain-http connection (this test suite talks to
+    http://localhost:8001), so we extract the token from Set-Cookie and pin it
+    onto the client's headers explicitly instead of relying on the cookie jar.
+    """
+    response = client.post("/auth/login", json={"email": email, "password": password})
+    if response.status_code != 200:
+        return response
+    set_cookie = response.headers.get("set-cookie", "")
+    token = set_cookie.split(f"{SESSION_COOKIE_NAME}=", 1)[1].split(";", 1)[0]
+    client.headers["Cookie"] = f"{SESSION_COOKIE_NAME}={token}"
+    return response
+
+
+def pin_session_cookie(client: httpx.Client, response: httpx.Response) -> None:
+    """Pin a Secure session cookie from any auth response (register/login) onto the client."""
+    set_cookie = response.headers.get("set-cookie", "")
+    if f"{SESSION_COOKIE_NAME}=" in set_cookie:
+        token = set_cookie.split(f"{SESSION_COOKIE_NAME}=", 1)[1].split(";", 1)[0]
+        client.headers["Cookie"] = f"{SESSION_COOKIE_NAME}={token}"
