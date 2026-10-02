@@ -53,7 +53,7 @@ api_router = APIRouter(prefix="/api")
 
 @api_router.get("/")
 async def root():
-    return {"message": "Portal Lelang Kejaksaan Negeri Jember", "mode": "preproduction"}
+    return {"message": "Portal Lelang Kejaksaan Negeri Jember", "mode": "production"}
 
 
 from routers import auth, auctions, cron, notifications, webhooks
@@ -67,7 +67,7 @@ api_router.include_router(cron.router, prefix="/cron", tags=["cron"])
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=[origin.strip() for origin in os.environ.get('CORS_ORIGINS', '').split(',') if origin.strip()],
     allow_methods=["*"],
     allow_headers=["*"],
 )
