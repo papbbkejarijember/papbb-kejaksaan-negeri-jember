@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiGet, apiPost } from "@/lib/api";
 import { formatDate, formatRupiah } from "@/lib/format";
+import { prepareImage } from "@/lib/image";
 import type { IdentitySubmission, NotificationChannel, NotificationConfig, NotificationStatus, NotificationTestResponse, ParticipantDashboard as ParticipantDashboardData, User, VerificationStatus } from "@/lib/types";
 
 const statusCopy: Record<VerificationStatus, { label: string; description: string; className: string }> = {
@@ -55,10 +56,7 @@ export default function Dashboard() {
   const selectKtp = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = () => setKtpImage(String(reader.result));
-    reader.readAsDataURL(file);
+    void prepareImage(file, "Foto KTP").then((prepared) => { setKtpImage(prepared.dataUrl); setFileName(prepared.fileName); }).catch((error) => toast.error(error instanceof Error ? error.message : "Foto KTP tidak dapat diproses."));
   };
 
   return <AppShell><div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8" data-testid="participant-dashboard-page">
