@@ -56,17 +56,25 @@ def _clean(doc: dict) -> dict:
 
 
 def _validate_image_data(value: str | None) -> str | None:
-    if value is None: return None
+    if value is None:
+        return None
     if not value.startswith(("data:image/jpeg;base64,", "data:image/png;base64,", "data:image/webp;base64,")):
         raise HTTPException(status_code=422, detail="Foto harus JPG, PNG, atau WEBP")
-    if len(value) > 4_500_000: raise HTTPException(status_code=413, detail="Ukuran foto terlalu besar. Maksimal sekitar 3,3 MB")
+    if len(value) > 4_500_000:
+        raise HTTPException(status_code=413, detail="Ukuran foto terlalu besar. Maksimal sekitar 3,3 MB")
     encoded = value.split(",", 1)[1]
-    try: raw = base64.b64decode(encoded, validate=True)
-    except (ValueError, binascii.Error) as exc: raise HTTPException(status_code=422, detail="Data foto tidak valid") from exc
-    if len(raw) > 3_300_000: raise HTTPException(status_code=413, detail="Ukuran foto terlalu besar. Maksimal 3,3 MB")
-    if value.startswith("data:image/jpeg") and not raw.startswith(b"\xff\xd8\xff"): raise HTTPException(status_code=422, detail="File JPEG tidak valid")
-    if value.startswith("data:image/png") and not raw.startswith(b"\x89PNG\r\n\x1a\n"): raise HTTPException(status_code=422, detail="File PNG tidak valid")
-    if value.startswith("data:image/webp") and not (raw.startswith(b"RIFF") and raw[8:12] == b"WEBP"): raise HTTPException(status_code=422, detail="File WEBP tidak valid")
+    try:
+        raw = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error) as exc:
+        raise HTTPException(status_code=422, detail="Data foto tidak valid") from exc
+    if len(raw) > 2_800_000:
+        raise HTTPException(status_code=413, detail="Ukuran foto terlalu besar. Maksimal 2,8 MB")
+    if value.startswith("data:image/jpeg") and not raw.startswith(b"\xff\xd8\xff"):
+        raise HTTPException(status_code=422, detail="File JPEG tidak valid")
+    if value.startswith("data:image/png") and not raw.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise HTTPException(status_code=422, detail="File PNG tidak valid")
+    if value.startswith("data:image/webp") and not (raw.startswith(b"RIFF") and raw[8:12] == b"WEBP"):
+        raise HTTPException(status_code=422, detail="File WEBP tidak valid")
     return value
 
 def _auction(doc: dict) -> Auction:

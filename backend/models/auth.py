@@ -44,7 +44,7 @@ class SessionResponse(BaseModel):
 class IdentitySubmissionCreate(BaseModel):
     nik: str = Field(min_length=16, max_length=16)
     address: str = Field(min_length=10, max_length=500)
-    ktp_image_data: str = Field(min_length=20, max_length=6_000_000)
+    ktp_image_data: str = Field(min_length=20, max_length=3_900_000)
     consent: bool
 
 
@@ -55,7 +55,7 @@ class IdentitySubmission(BaseModel):
     email: str
     nik: str
     address: str
-    ktp_image_data: str
+    ktp_image_url: str | None = None
     status: VerificationStatus
     submitted_at: str
     reviewed_at: str | None = None

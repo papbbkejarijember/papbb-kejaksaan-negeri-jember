@@ -3,6 +3,9 @@ import os
 import uuid
 
 from fastapi import APIRouter, HTTPException, Request, Response, status
+from fastapi.responses import Response as ImageResponse
+import base64
+import binascii
 
 from lib.audit import write_audit
 from lib.auth import SESSION_COOKIE, get_current_user, hash_password, public_user, require_role, verify_password
@@ -33,7 +36,8 @@ def _identity_response(document: dict) -> IdentitySubmission:
     clean = {key: value for key, value in document.items() if key != "_id"}
     clean["nik"] = decrypt_pii(clean.pop("nik_encrypted")) if clean.get("nik_encrypted") else clean.pop("nik", "")
     clean["address"] = decrypt_pii(clean.pop("address_encrypted")) if clean.get("address_encrypted") else clean.pop("address", "")
-    clean["ktp_image_data"] = decrypt_pii(clean.pop("ktp_image_encrypted")) if clean.get("ktp_image_encrypted") else clean.pop("ktp_image_data", "")
+    has_image = bool(clean.pop("ktp_image_encrypted", None) or clean.pop("ktp_image_data", None))
+    clean["ktp_image_url"] = f"/api/auth/verifications/{clean['id']}/image" if has_image else None
     return IdentitySubmission(**clean)
 
 

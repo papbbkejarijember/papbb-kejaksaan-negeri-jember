@@ -18,7 +18,7 @@ class AuctionCreate(BaseModel):
     increment: float = Field(gt=0)
     starts_at: str = Field(min_length=10, max_length=40)
     ends_at: str = Field(min_length=10, max_length=40)
-    image_data: str | None = Field(default=None, max_length=4_500_000)
+    image_data: str | None = Field(default=None, max_length=3_900_000)
 
 
 class AuctionUpdate(BaseModel):
@@ -30,7 +30,8 @@ class AuctionUpdate(BaseModel):
     increment: float | None = Field(default=None, gt=0)
     starts_at: str | None = Field(default=None, min_length=10, max_length=40)
     ends_at: str | None = Field(default=None, min_length=10, max_length=40)
-    image_data: str | None = Field(default=None, max_length=4_500_000)
+    image_data: str | None = Field(default=None, max_length=3_900_000)
+    remove_image: bool = False
 
 
 class Auction(BaseModel):
