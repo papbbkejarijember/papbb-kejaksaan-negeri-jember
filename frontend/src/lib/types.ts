@@ -110,7 +110,7 @@ export interface IdentitySubmission {
   email: string;
   nik: string;
   address: string;
-  ktp_image_data: string;
+  ktp_image_url: string | null;
   status: VerificationStatus;
   submitted_at: string;
   reviewed_at: string | null;
