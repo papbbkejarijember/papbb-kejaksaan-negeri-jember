@@ -61,7 +61,7 @@ def _validate_image_data(value: str | None) -> str | None:
     if not value.startswith(("data:image/jpeg;base64,", "data:image/png;base64,", "data:image/webp;base64,")):
         raise HTTPException(status_code=422, detail="Foto harus JPG, PNG, atau WEBP")
     if len(value) > 4_500_000:
-        raise HTTPException(status_code=413, detail="Ukuran foto terlalu besar. Maksimal sekitar 3,3 MB")
+        raise HTTPException(status_code=413, detail="Ukuran foto terlalu besar. Maksimal sekitar 2,8 MB")
     encoded = value.split(",", 1)[1]
     try:
         raw = base64.b64decode(encoded, validate=True)
@@ -222,8 +222,11 @@ async def update_auction(auction_id: str, payload: AuctionUpdate, request: Reque
     current = await _get_auction(auction_id)
     if _auction(current).status == "ended":
         raise HTTPException(status_code=409, detail="Lelang yang selesai tidak dapat diedit")
-    changes = payload.model_dump(exclude_none=True)
-    if "image_data" in changes: changes["image_data"] = _validate_image_data(changes["image_data"])
+    changes = payload.model_dump(exclude_none=True, exclude={"remove_image"})
+    if payload.remove_image:
+        changes["image_data"] = None
+    elif "image_data" in changes:
+        changes["image_data"] = _validate_image_data(changes["image_data"])
     if "starts_at" in changes:
         changes["starts_at"] = _normalise_datetime(changes["starts_at"])
     if "ends_at" in changes:
