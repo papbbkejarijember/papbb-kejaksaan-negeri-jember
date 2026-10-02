@@ -273,24 +273,34 @@ async def place_bid(auction_id: str, payload: BidCreate, request: Request):
     item = _auction(auction)
     if item.status != "ongoing":
         raise HTTPException(status_code=409, detail="Lelang belum atau sudah selesai")
-    minimum = item.limit_price if item.highest_bid is None else item.highest_bid + item.increment
+    previous_bidder_id = auction.get("highest_bidder_id")
+    if auction.get("highest_bid") is None:
+        bid_filter = {"id": auction_id, "highest_bid": None, "manual_status": {"$ne": "ended"}}
+        minimum = item.limit_price
+    else:
+        bid_filter = {"id": auction_id, "highest_bid": auction["highest_bid"], "increment": auction["increment"], "manual_status": {"$ne": "ended"}}
+        minimum = item.highest_bid + item.increment
     if payload.amount < minimum:
         raise HTTPException(status_code=422, detail=f"Penawaran minimum berikutnya Rp {minimum:,.0f}")
-    created_at = _now().isoformat()
-    bid = {
-        "id": str(uuid.uuid4()),
-        "auction_id": auction_id,
-        "bidder_id": user["id"],
-        "bidder_name": user["full_name"],
-        "amount": payload.amount,
-        "created_at": created_at,
-    }
-    previous_bidder_id = auction.get("highest_bidder_id")
-    await db.bids.insert_one(bid)
-    await db.auctions.update_one(
-        {"id": auction_id},
+    claimed = await db.auctions.update_one(
+        bid_filter,
         {"$set": {"highest_bid": payload.amount, "highest_bidder_id": user["id"]}, "$inc": {"bid_count": 1}},
     )
+    if claimed.modified_count != 1:
+        fresh = await _get_auction(auction_id)
+        fresh_item = _auction(fresh)
+        fresh_minimum = fresh_item.limit_price if fresh_item.highest_bid is None else fresh_item.highest_bid + fresh_item.increment
+        raise HTTPException(status_code=409, detail=f"Penawaran berubah. Minimum penawaran berikutnya Rp {fresh_minimum:,.0f}")
+    created_at = _now().isoformat()
+    bid = {"id": str(uuid.uuid4()), "auction_id": auction_id, "bidder_id": user["id"], "bidder_name": user["full_name"], "amount": payload.amount, "created_at": created_at}
+    try:
+        await db.bids.insert_one(bid)
+    except Exception:
+        await db.auctions.update_one(
+            {"id": auction_id, "highest_bid": payload.amount, "highest_bidder_id": user["id"]},
+            {"$set": {"highest_bid": auction.get("highest_bid"), "highest_bidder_id": previous_bidder_id}, "$inc": {"bid_count": -1}},
+        )
+        raise
     await send_email_notification(
         user_id=user["id"], recipient=user["email"], subject="Penawaran Anda berhasil diterima",
         message=f"Penawaran untuk {item.title} sebesar Rp {payload.amount:,.0f} tercatat.",
