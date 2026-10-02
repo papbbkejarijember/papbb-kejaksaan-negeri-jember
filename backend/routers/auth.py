@@ -32,6 +32,25 @@ def _normalise_email(value: str) -> str:
     return value.strip().lower()
 
 
+
+def _validate_ktp_image(value: str) -> str:
+    if not value.startswith(("data:image/jpeg;base64,", "data:image/png;base64,", "data:image/webp;base64,")):
+        raise HTTPException(status_code=422, detail="Berkas KTP harus berupa gambar JPG, PNG, atau WEBP")
+    try:
+        encoded = value.split(",", 1)[1]
+        raw = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error, IndexError) as exc:
+        raise HTTPException(status_code=422, detail="Data foto KTP tidak valid") from exc
+    if len(raw) > 2_800_000:
+        raise HTTPException(status_code=413, detail="Ukuran foto KTP terlalu besar. Maksimal 2,8 MB")
+    if value.startswith("data:image/jpeg") and not raw.startswith(b"\\xff\\xd8\\xff"):
+        raise HTTPException(status_code=422, detail="File JPEG tidak valid")
+    if value.startswith("data:image/png") and not raw.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+        raise HTTPException(status_code=422, detail="File PNG tidak valid")
+    if value.startswith("data:image/webp") and not (raw.startswith(b"RIFF") and raw[8:12] == b"WEBP"):
+        raise HTTPException(status_code=422, detail="File WEBP tidak valid")
+    return value
+
 def _identity_response(document: dict) -> IdentitySubmission:
     clean = {key: value for key, value in document.items() if key != "_id"}
     clean["nik"] = decrypt_pii(clean.pop("nik_encrypted")) if clean.get("nik_encrypted") else clean.pop("nik", "")
@@ -127,6 +146,25 @@ async def list_verifications(request: Request):
     documents = await db.identity_verifications.find().sort("submitted_at", -1).to_list(200)
     return [_identity_response(doc) for doc in documents]
 
+
+
+@router.get("/verifications/{verification_id}/image")
+async def verification_image(verification_id: str, request: Request):
+    await require_role(request, "admin")
+    document = await db.identity_verifications.find_one({"id": verification_id})
+    if not document:
+        raise HTTPException(status_code=404, detail="Pengajuan verifikasi tidak ditemukan")
+    encrypted = document.get("ktp_image_encrypted") or document.get("ktp_image_data")
+    if not encrypted:
+        raise HTTPException(status_code=404, detail="Foto KTP tidak tersedia")
+    value = decrypt_pii(encrypted) if document.get("ktp_image_encrypted") else encrypted
+    try:
+        header, encoded = value.split(",", 1)
+        content = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error, IndexError) as exc:
+        raise HTTPException(status_code=500, detail="Foto KTP rusak") from exc
+    media_type = header.removeprefix("data:").removesuffix(";base64")
+    return ImageResponse(content=content, media_type=media_type, headers={"Cache-Control": "private, no-store"})
 
 @router.patch("/verifications/{verification_id}", response_model=IdentitySubmission)
 async def review_verification(verification_id: str, payload: IdentityReviewRequest, request: Request):
