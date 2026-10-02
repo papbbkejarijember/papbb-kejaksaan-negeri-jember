@@ -43,9 +43,9 @@ def _validate_ktp_image(value: str) -> str:
         raise HTTPException(status_code=422, detail="Data foto KTP tidak valid") from exc
     if len(raw) > 2_800_000:
         raise HTTPException(status_code=413, detail="Ukuran foto KTP terlalu besar. Maksimal 2,8 MB")
-    if value.startswith("data:image/jpeg") and not raw.startswith(b"\\xff\\xd8\\xff"):
+    if value.startswith("data:image/jpeg") and not raw.startswith(b"\xff\xd8\xff"):
         raise HTTPException(status_code=422, detail="File JPEG tidak valid")
-    if value.startswith("data:image/png") and not raw.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+    if value.startswith("data:image/png") and not raw.startswith(b"\x89PNG\r\n\x1a\n"):
         raise HTTPException(status_code=422, detail="File PNG tidak valid")
     if value.startswith("data:image/webp") and not (raw.startswith(b"RIFF") and raw[8:12] == b"WEBP"):
         raise HTTPException(status_code=422, detail="File WEBP tidak valid")
