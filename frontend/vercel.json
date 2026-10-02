@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://papbb-kejaksaan-negeri-jember-api.vercel.app/api/:path*"
+    }
+  ]
+}
