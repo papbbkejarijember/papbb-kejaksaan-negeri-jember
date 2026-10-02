@@ -24,7 +24,7 @@ const statusStyles: Record<AuctionStatus, string> = {
 function AuctionCard({ auction }: { auction: Auction }) {
   return (
     <Card className="group overflow-hidden border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:border-[#c59b27]/70 hover:shadow-xl dark:border-slate-700 dark:bg-slate-900" data-testid={`auction-card-${auction.id}`}>
-      <div className="relative h-40 overflow-hidden bg-[#0f2c59] p-6 text-white">
+      <div className="relative h-40 overflow-hidden bg-[#0f2c59] text-white">{auction.image_url ? <img src={auction.image_url} alt={`Foto ${auction.title}`} className="absolute inset-0 h-full w-full object-cover" data-testid={`auction-card-image-${auction.id}`} /> : null}<div className={`absolute inset-0 ${auction.image_url ? "bg-gradient-to-t from-[#0a1d3c]/90 via-[#0f2c59]/25 to-transparent" : "bg-[#0f2c59]"}`} />
         <div className="absolute -right-6 -top-10 h-40 w-40 rounded-full border-[18px] border-[#c59b27]/20" />
         <div className="absolute -bottom-12 right-16 h-28 w-28 rounded-full bg-[#163b72]" />
         <div className="relative flex h-full flex-col justify-between">

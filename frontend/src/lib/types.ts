@@ -28,6 +28,7 @@ export interface Auction {
   increment: number;
   starts_at: string;
   ends_at: string;
+  image_url: string | null;
   status: AuctionStatus;
   highest_bid: number | null;
   bid_count: number;
@@ -99,6 +100,7 @@ export interface AuctionCreatePayload {
   increment: number;
   starts_at: string;
   ends_at: string;
+  image_data?: string | null;
 }
 
 export interface IdentitySubmission {

@@ -1,7 +1,10 @@
 from datetime import datetime, timezone
+import base64
+import binascii
 import uuid
 
 from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi.responses import Response
 
 from lib.audit import write_audit
 from lib.auth import public_user, require_role
@@ -52,8 +55,24 @@ def _clean(doc: dict) -> dict:
     return {key: value for key, value in doc.items() if key != "_id"}
 
 
+def _validate_image_data(value: str | None) -> str | None:
+    if value is None: return None
+    if not value.startswith(("data:image/jpeg;base64,", "data:image/png;base64,", "data:image/webp;base64,")):
+        raise HTTPException(status_code=422, detail="Foto harus JPG, PNG, atau WEBP")
+    if len(value) > 4_500_000: raise HTTPException(status_code=413, detail="Ukuran foto terlalu besar. Maksimal sekitar 3,3 MB")
+    encoded = value.split(",", 1)[1]
+    try: raw = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error) as exc: raise HTTPException(status_code=422, detail="Data foto tidak valid") from exc
+    if len(raw) > 3_300_000: raise HTTPException(status_code=413, detail="Ukuran foto terlalu besar. Maksimal 3,3 MB")
+    if value.startswith("data:image/jpeg") and not raw.startswith(b"\xff\xd8\xff"): raise HTTPException(status_code=422, detail="File JPEG tidak valid")
+    if value.startswith("data:image/png") and not raw.startswith(b"\x89PNG\r\n\x1a\n"): raise HTTPException(status_code=422, detail="File PNG tidak valid")
+    if value.startswith("data:image/webp") and not (raw.startswith(b"RIFF") and raw[8:12] == b"WEBP"): raise HTTPException(status_code=422, detail="File WEBP tidak valid")
+    return value
+
 def _auction(doc: dict) -> Auction:
     clean = _clean(doc)
+    has_image = bool(clean.pop("image_data", None))
+    clean["image_url"] = f"/api/auctions/{clean['id']}/image" if has_image else None
     clean["status"] = _status(clean["starts_at"], clean["ends_at"], clean.get("manual_status"))
     return Auction(**clean)
 
@@ -139,6 +158,16 @@ async def auction_report(auction_id: str, request: Request):
     )
 
 
+@router.get("/{auction_id}/image")
+async def auction_image(auction_id: str):
+    auction = await _get_auction(auction_id)
+    value = auction.get("image_data")
+    if not value: raise HTTPException(status_code=404, detail="Foto objek tidak tersedia")
+    header, encoded = value.split(",", 1)
+    try: content = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error) as exc: raise HTTPException(status_code=500, detail="Foto objek rusak") from exc
+    return Response(content=content, media_type=header.removeprefix("data:").removesuffix(";base64"), headers={"Cache-Control": "public, max-age=300"})
+
 @router.get("/{auction_id}", response_model=AuctionDetail)
 async def get_auction(auction_id: str):
     auction = await _get_auction(auction_id)
@@ -163,6 +192,7 @@ async def create_auction(payload: AuctionCreate, request: Request):
         "increment": payload.increment,
         "starts_at": starts_at,
         "ends_at": ends_at,
+        "image_data": _validate_image_data(payload.image_data),
         "highest_bid": None,
         "highest_bidder_id": None,
         "bid_count": 0,
@@ -185,6 +215,7 @@ async def update_auction(auction_id: str, payload: AuctionUpdate, request: Reque
     if _auction(current).status == "ended":
         raise HTTPException(status_code=409, detail="Lelang yang selesai tidak dapat diedit")
     changes = payload.model_dump(exclude_none=True)
+    if "image_data" in changes: changes["image_data"] = _validate_image_data(changes["image_data"])
     if "starts_at" in changes:
         changes["starts_at"] = _normalise_datetime(changes["starts_at"])
     if "ends_at" in changes:
@@ -242,24 +273,34 @@ async def place_bid(auction_id: str, payload: BidCreate, request: Request):
     item = _auction(auction)
     if item.status != "ongoing":
         raise HTTPException(status_code=409, detail="Lelang belum atau sudah selesai")
-    minimum = item.limit_price if item.highest_bid is None else item.highest_bid + item.increment
+    previous_bidder_id = auction.get("highest_bidder_id")
+    if auction.get("highest_bid") is None:
+        bid_filter = {"id": auction_id, "highest_bid": None, "manual_status": {"$ne": "ended"}}
+        minimum = item.limit_price
+    else:
+        bid_filter = {"id": auction_id, "highest_bid": auction["highest_bid"], "increment": auction["increment"], "manual_status": {"$ne": "ended"}}
+        minimum = item.highest_bid + item.increment
     if payload.amount < minimum:
         raise HTTPException(status_code=422, detail=f"Penawaran minimum berikutnya Rp {minimum:,.0f}")
-    created_at = _now().isoformat()
-    bid = {
-        "id": str(uuid.uuid4()),
-        "auction_id": auction_id,
-        "bidder_id": user["id"],
-        "bidder_name": user["full_name"],
-        "amount": payload.amount,
-        "created_at": created_at,
-    }
-    previous_bidder_id = auction.get("highest_bidder_id")
-    await db.bids.insert_one(bid)
-    await db.auctions.update_one(
-        {"id": auction_id},
+    claimed = await db.auctions.update_one(
+        bid_filter,
         {"$set": {"highest_bid": payload.amount, "highest_bidder_id": user["id"]}, "$inc": {"bid_count": 1}},
     )
+    if claimed.modified_count != 1:
+        fresh = await _get_auction(auction_id)
+        fresh_item = _auction(fresh)
+        fresh_minimum = fresh_item.limit_price if fresh_item.highest_bid is None else fresh_item.highest_bid + fresh_item.increment
+        raise HTTPException(status_code=409, detail=f"Penawaran berubah. Minimum penawaran berikutnya Rp {fresh_minimum:,.0f}")
+    created_at = _now().isoformat()
+    bid = {"id": str(uuid.uuid4()), "auction_id": auction_id, "bidder_id": user["id"], "bidder_name": user["full_name"], "amount": payload.amount, "created_at": created_at}
+    try:
+        await db.bids.insert_one(bid)
+    except Exception:
+        await db.auctions.update_one(
+            {"id": auction_id, "highest_bid": payload.amount, "highest_bidder_id": user["id"]},
+            {"$set": {"highest_bid": auction.get("highest_bid"), "highest_bidder_id": previous_bidder_id}, "$inc": {"bid_count": -1}},
+        )
+        raise
     await send_email_notification(
         user_id=user["id"], recipient=user["email"], subject="Penawaran Anda berhasil diterima",
         message=f"Penawaran untuk {item.title} sebesar Rp {payload.amount:,.0f} tercatat.",

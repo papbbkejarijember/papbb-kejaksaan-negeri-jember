@@ -31,7 +31,7 @@ export default function AppShell({ children }: AppShellProps) {
       queryClient.removeQueries({ queryKey: ["participant-dashboard"] });
       queryClient.removeQueries({ queryKey: ["admin-dashboard"] });
       toast.success("Anda telah keluar dari sesi.");
-      navigate("/");
+      navigate("/auth");
     },
   });
 
