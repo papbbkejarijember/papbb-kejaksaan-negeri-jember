@@ -101,6 +101,7 @@ export interface AuctionCreatePayload {
   starts_at: string;
   ends_at: string;
   image_data?: string | null;
+  remove_image?: boolean;
 }
 
 export interface IdentitySubmission {
