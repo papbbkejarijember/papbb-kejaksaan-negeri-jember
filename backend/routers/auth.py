@@ -99,8 +99,7 @@ async def submit_identity(payload: IdentitySubmissionCreate, request: Request):
         raise HTTPException(status_code=422, detail="Persetujuan pemrosesan KTP wajib diberikan")
     if not payload.nik.isdigit():
         raise HTTPException(status_code=422, detail="NIK harus terdiri dari 16 angka")
-    if not payload.ktp_image_data.startswith(("data:image/jpeg;base64,", "data:image/png;base64,", "data:image/webp;base64,")):
-        raise HTTPException(status_code=422, detail="Berkas KTP harus berupa gambar JPG, PNG, atau WEBP")
+    _validate_ktp_image(payload.ktp_image_data)
     now = datetime.now(timezone.utc).isoformat()
     existing = await db.identity_verifications.find_one({"user_id": user["id"]})
     document = {
@@ -165,8 +164,7 @@ async def delete_verification(verification_id: str, request: Request):
     if not document:
         raise HTTPException(status_code=404, detail="Pengajuan verifikasi tidak ditemukan")
     await db.identity_verifications.delete_one({"id": verification_id})
-    if document.get("status") != "approved":
-        await db.users.update_one({"id": document["user_id"]}, {"$set": {"verification_status": "not_submitted"}})
+    await db.users.update_one({"id": document["user_id"]}, {"$set": {"verification_status": "not_submitted"}})
     await write_audit(
         actor=admin, action="identity_deleted", target_type="identity_verification",
         target_id=verification_id, request=request,
